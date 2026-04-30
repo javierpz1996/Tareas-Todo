@@ -1,14 +1,15 @@
 import { StatusBar } from "expo-status-bar";
-import { SafeAreaView } from "react-native";
+import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import "./global.css";
-import { HomeScreen } from "./src/screens/HomeScreen";
+import HomeScreen from "./src/screens/HomeScreen";
 
 export default function App() {
   return (
-    <SafeAreaView style={{ flex: 1 }}>
-      <HomeScreen />
-      <StatusBar style="auto" />
-    </SafeAreaView>
+    <SafeAreaProvider>
+      <SafeAreaView className="flex-1 bg-slate-950" edges={["top", "bottom"]}>
+        <HomeScreen />
+        <StatusBar style="light" />
+      </SafeAreaView>
+    </SafeAreaProvider>
   );
 }
-

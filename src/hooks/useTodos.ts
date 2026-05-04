@@ -1,65 +1,92 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { getTodos } from "../services/todoService";
-import { Todo } from "../types/todo.types";
+import type { Todo } from "../types/todo.types";
 
 const STORAGE_KEY = "TODOS";
 
+function parseTodos(raw: string): Todo[] {
+  const parsed: unknown = JSON.parse(raw);
+  if (!Array.isArray(parsed)) return [];
+
+  return parsed.filter(
+    (item): item is Todo =>
+      item !== null &&
+      typeof item === "object" &&
+      typeof (item as Todo).id === "number" &&
+      typeof (item as Todo).title === "string" &&
+      typeof (item as Todo).completed === "boolean",
+  );
+}
+
 export default function useTodos() {
   const [todos, setTodos] = useState<Todo[]>([]);
+  const hasLoadedRef = useRef(false);
 
   useEffect(() => {
-    loadInitialTodos();
+    let cancelled = false;
+
+    (async () => {
+      try {
+        const stored = await AsyncStorage.getItem(STORAGE_KEY);
+        if (cancelled) return;
+
+        if (stored) {
+          setTodos(parseTodos(stored));
+        } else {
+          setTodos(await getTodos());
+        }
+
+        if (!cancelled) {
+          hasLoadedRef.current = true;
+        }
+      } catch (error) {
+        console.log(error);
+        if (!cancelled) {
+          setTodos([]);
+          hasLoadedRef.current = true;
+        }
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   useEffect(() => {
-    saveTodos();
+    if (!hasLoadedRef.current) return;
+
+    void AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(todos)).catch(
+      (error: unknown) => {
+        console.log(error);
+      },
+    );
   }, [todos]);
 
-  const loadInitialTodos = async () => {
-    try {
-      const stored = await AsyncStorage.getItem(STORAGE_KEY);
-
-      if (stored) {
-        const localTodos: Todo[] = JSON.parse(stored);
-        setTodos(localTodos);
-      } else {
-        const apiTodos = await getTodos();
-        setTodos(apiTodos);
-      }
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  const saveTodos = async () => {
-    try {
-      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(todos));
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
   const addTodo = (title: string) => {
+    const trimmed = title.trim();
+    if (!trimmed) return;
+
     const newTodo: Todo = {
       id: Date.now(),
-      title,
+      title: trimmed,
       completed: false,
     };
 
-    setTodos((prev) => [newTodo, ...prev]);
+    setTodos((prev: Todo[]) => [newTodo, ...prev]);
   };
 
   const toggleTodo = (id: number) => {
-    setTodos((prev) =>
-      prev.map((todo) =>
+    setTodos((prev: Todo[]) =>
+      prev.map((todo: Todo) =>
         todo.id === id ? { ...todo, completed: !todo.completed } : todo,
       ),
     );
   };
 
   const deleteTodo = (id: number) => {
-    setTodos((prev) => prev.filter((todo) => todo.id !== id));
+    setTodos((prev: Todo[]) => prev.filter((todo: Todo) => todo.id !== id));
   };
 
   return {

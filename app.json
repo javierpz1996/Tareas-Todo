@@ -19,12 +19,12 @@
         "backgroundImage": "./assets/images/android-icon-background.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
-      "androidNavigationBar": {
-        "backgroundColor": "#FF0000",
-        "barStyle": "light-content"
-      },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false
+    },
+    "androidNavigationBar": {
+      "backgroundColor": "#FF0000",
+      "barStyle": "light-content"
     },
     "web": {
       "output": "static",

@@ -1,6 +1,10 @@
 {
+  "cli": {
+    "version": ">= 14.0.0"
+  },
   "build": {
     "preview": {
+      "node": "20.18.1",
       "android": {
         "buildType": "apk"
       }

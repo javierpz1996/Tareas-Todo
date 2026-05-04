@@ -12,6 +12,7 @@
       "supportsTablet": true
     },
     "android": {
+      "package": "com.todoapp.app",
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
@@ -28,6 +29,12 @@
     "web": {
       "output": "static",
       "favicon": "./assets/images/favicon.png"
-    }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "130d08aa-e687-46bc-ae90-83ccc7b317cc"
+      }
+    },
+    "owner": "javpeniaz"
   }
 }
